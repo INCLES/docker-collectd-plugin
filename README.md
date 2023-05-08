@@ -32,25 +32,38 @@ Add the following to your collectd config:
 
 ```
 TypesDB "/usr/share/collectd/docker-collectd-plugin/dockerplugin.db"
+
 LoadPlugin python
+LoadPlugin match_regex
 
 <LoadPlugin python>
-   # This should be high to prevent "value too old"
-   # https://github.com/lebauce/docker-collectd-plugin/issues/20
-   # https://github.com/collectd/collectd/issues/987
-   Interval 300
+	Interval 300
 </LoadPlugin>
 
 <Plugin python>
-  ModulePath "/usr/share/collectd/docker-collectd-plugin"
-  Import "dockerplugin"
+	ModulePath "/usr/share/collectd/docker-collectd-plugin"
+	Import "dockerplugin"
 
-  <Module dockerplugin>
-    BaseURL "unix://var/run/docker.sock"
-    Timeout 3
-  </Module>
+	<Module dockerplugin>
+		BaseURL "unix://var/run/docker.sock"
+		Timeout 3
+	</Module>
 </Plugin>
+
+<Chain "PostCache">
+	<Rule "ignore_docker_metrics">
+		<Match "regex">
+			Plugin "docker"
+			Type "^(blkio.old|cpu.(percpu.usage|throttling_data|usage)|memory.(percent|stats|usage)|network.usage)$"
+		</Match>
+		Target "stop"
+	</Rule>
+
+	# Default target
+	Target "write"
+</Chain>
 ```
+
 *Warning* : 
 Adding a custom `TypesDB` can raise a collectd error displaying :
 ```
