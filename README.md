@@ -1,7 +1,5 @@
 # docker-collectd-plugin
 
-[![Build Status](https://travis-ci.org/lebauce/docker-collectd-plugin.svg?branch=master)](https://travis-ci.org/lebauce/docker-collectd-plugin)
-
 A [Docker](http://docker.io) plugin for [collectd](http://collectd.org)
 using [docker-py](https://github.com/docker/docker-py) and collectd's
 [Python plugin](http://collectd.org/documentation/manpages/collectd-python.5.shtml).
@@ -35,6 +33,13 @@ Add the following to your collectd config:
 ```
 TypesDB "/usr/share/collectd/docker-collectd-plugin/dockerplugin.db"
 LoadPlugin python
+
+<LoadPlugin python>
+   # This should be high to prevent "value too old"
+   # https://github.com/lebauce/docker-collectd-plugin/issues/20
+   # https://github.com/collectd/collectd/issues/987
+   Interval 300
+</LoadPlugin>
 
 <Plugin python>
   ModulePath "/usr/share/collectd/docker-collectd-plugin"
